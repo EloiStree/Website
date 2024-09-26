@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Since 1970</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 20%;
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Time Since 1970 (Unix Epoch)</h1>
+    <div id="timeSince1970">Loading...</div>
+
+    <script>
+        function updateTime() {
+            // Get the current time in milliseconds since the Unix Epoch (January 1, 1970)
+            const now = Date.now();
+
+            // Calculate the time since 1970 in different units
+            const seconds = Math.floor(now / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+            const years = Math.floor(days / 365);
+
+            // Create the display string
+            const displayText = `
+                ${years} years, 
+                ${days % 365} days, 
+                ${hours % 24} hours, 
+                ${minutes % 60} minutes, 
+                ${seconds % 60} seconds
+            `;
+
+            // Update the content of the div with id "timeSince1970"
+            document.getElementById("timeSince1970").textContent = displayText;
+        }
+
+        // Call updateTime every second
+        setInterval(updateTime, 1000);
+
+        // Initial call to display the time immediately when the page loads
+        updateTime();
+    </script>
+</body>
+</html>
