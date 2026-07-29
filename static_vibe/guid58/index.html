@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Base58 GUID-256 Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<style>
+  :root {
+    --bg: #0c0f14;
+    --surface: #141820;
+    --card: #1a1f2b;
+    --border: #2a3040;
+    --fg: #e8ecf4;
+    --muted: #6b7a94;
+    --accent: #00e5a0;
+    --accent-dim: rgba(0,229,160,0.12);
+    --accent-glow: rgba(0,229,160,0.25);
+    --danger: #ff5c72;
+    --qr-bg: #ffffff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Space Grotesk', sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow-x: hidden;
+    overflow-y: auto;
+    position: relative;
+    padding: 40px 0;
+  }
+
+  .bg-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .bg-layer .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    animation: orbFloat 12s ease-in-out infinite alternate;
+  }
+
+  .orb-1 {
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(0,229,160,0.15), transparent 70%);
+    top: -10%; left: -10%;
+  }
+
+  .orb-2 {
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(0,180,220,0.1), transparent 70%);
+    bottom: -15%; right: -5%;
+    animation-delay: -4s;
+  }
+
+  .orb-3 {
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(0,229,160,0.08), transparent 70%);
+    top: 50%; left: 60%;
+    animation-delay: -8s;
+  }
+
+  @keyframes orbFloat {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(40px, -30px) scale(1.15); }
+    100% { transform: translate(-20px, 20px) scale(0.95); }
+  }
+
+  .grid-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(42,48,64,0.3) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(42,48,64,0.3) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 100%);
+    -webkit-mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 100%);
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 720px;
+    padding: 24px;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .header .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent-dim);
+    border: 1px solid rgba(0,229,160,0.2);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 100px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .header h1 {
+    font-size: clamp(28px, 5vw, 42px);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -1px;
+    margin-bottom: 10px;
+  }
+
+  .header h1 span { color: var(--accent); }
+
+  .header p {
+    color: var(--muted);
+    font-size: 15px;
+    font-weight: 300;
+    max-width: 480px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent-glow), transparent);
+  }
+
+  .output-wrap {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 20px;
+    margin-bottom: 24px;
+    position: relative;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.3s;
+  }
+
+  .output-wrap:hover { border-color: rgba(0,229,160,0.3); }
+
+  .output-wrap .guid-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(16px, 3vw, 22px);
+    font-weight: 700;
+    color: var(--fg);
+    text-align: center;
+    word-break: break-all;
+    line-height: 1.5;
+    letter-spacing: 1px;
+    user-select: all;
+    transition: color 0.3s;
+  }
+
+  .output-wrap .guid-text.flash { color: var(--accent); }
+  .output-wrap .placeholder-text { color: var(--muted); font-size: 14px; font-weight: 300; }
+
+  .action-btns {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 6px;
+  }
+
+  .icon-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.25s;
+    font-size: 13px;
+  }
+
+  .icon-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  .icon-btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  .icon-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .icon-btn:disabled:hover {
+    border-color: var(--border);
+    color: var(--muted);
+    background: var(--surface);
+  }
+
+  .info-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .info-chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 12px;
+    text-align: center;
+  }
+
+  .info-chip .label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+
+  .info-chip .value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--fg);
+  }
+
+  .generate-btn {
+    width: 100%;
+    padding: 18px 24px;
+    background: var(--accent);
+    color: var(--bg);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+    letter-spacing: 0.5px;
+  }
+
+  .generate-btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent 50%);
+    pointer-events: none;
+  }
+
+  .generate-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,229,160,0.3);
+  }
+
+  .generate-btn:active { transform: translateY(0) scale(0.98); }
+
+  .generate-btn i {
+    font-size: 15px;
+    transition: transform 0.4s;
+  }
+
+  .generate-btn:hover i { transform: rotate(180deg); }
+
+  /* QR Section */
+  .qr-section {
+    margin-top: 28px;
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height 0.5s cubic-bezier(0.4,0,0.2,1), opacity 0.4s ease, margin-top 0.4s ease;
+  }
+
+  .qr-section.open {
+    max-height: 500px;
+    opacity: 1;
+    margin-top: 28px;
+  }
+
+  .qr-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin-bottom: 24px;
+  }
+
+  .qr-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+  }
+
+  .qr-label {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  .qr-frame {
+    background: var(--qr-bg);
+    border-radius: 16px;
+    padding: 16px;
+    position: relative;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.05),
+      0 20px 50px rgba(0,0,0,0.4);
+    animation: qrPop 0.35s cubic-bezier(0.34,1.56,0.64,1);
+  }
+
+  @keyframes qrPop {
+    from { transform: scale(0.85); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .qr-frame canvas {
+    display: block;
+    border-radius: 4px;
+  }
+
+  .qr-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .qr-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--fg);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+
+  .qr-action-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  .qr-action-btn.copied-state {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  .qr-action-btn i { font-size: 13px; }
+
+  /* History */
+  .history-section {
+    margin-top: 28px;
+  }
+
+  .history-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .history-header h3 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  .clear-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 12px;
+    cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif;
+    transition: color 0.2s;
+    padding: 4px 8px;
+    border-radius: 6px;
+  }
+
+  .clear-btn:hover {
+    color: var(--danger);
+    background: rgba(255,92,114,0.1);
+  }
+
+  .history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .history-list::-webkit-scrollbar { width: 5px; }
+  .history-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+  .history-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    animation: slideIn 0.3s ease-out;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .history-item .h-guid {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+    word-break: break-all;
+    flex: 1;
+    margin-right: 10px;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+
+  .history-item .h-guid:hover { color: var(--fg); }
+
+  .history-item .h-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .h-icon-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 4px 6px;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+
+  .h-icon-btn:hover {
+    color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 20px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 300;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--card);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    padding: 10px 20px;
+    border-radius: 12px;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.35s ease;
+    box-shadow: 0 4px 20px rgba(0,229,160,0.15);
+  }
+
+  .toast.error {
+    border-color: var(--danger);
+    color: var(--danger);
+    box-shadow: 0 4px 20px rgba(255,92,114,0.15);
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  #particles {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .kbd-hint {
+    text-align: center;
+    margin-top: 20px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 300;
+  }
+
+  .kbd-hint kbd {
+    display: inline-block;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 2px 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    margin: 0 2px;
+  }
+
+  @media (max-width: 500px) {
+    .info-row { grid-template-columns: 1fr; }
+    .card { padding: 20px; }
+    .qr-actions { flex-direction: column; align-items: stretch; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-layer">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+<div class="grid-overlay"></div>
+<canvas id="particles"></canvas>
+
+<main class="container">
+  <header class="header">
+    <div class="tag"><i class="fa-solid fa-fingerprint"></i> Cryptographic RNG</div>
+    <h1>Base58 <span>GUID-256</span> Generator</h1>
+    <p>Generate a 256-bit globally unique identifier encoded in Base58 — no ambiguous characters, safe for URLs and handwriting.</p>
+  </header>
+
+  <div class="card">
+    <div class="output-wrap" id="outputWrap">
+      <div class="action-btns">
+        <button class="icon-btn" id="qrToggleBtn" title="Show QR Code" aria-label="Toggle QR code" disabled>
+          <i class="fa-solid fa-qrcode"></i>
+        </button>
+        <button class="icon-btn" id="copyBtn" title="Copy to clipboard" aria-label="Copy GUID to clipboard" disabled>
+          <i class="fa-regular fa-copy"></i>
+        </button>
+      </div>
+      <span class="placeholder-text" id="placeholder">Press generate or hit Space</span>
+      <span class="guid-text" id="guidText" style="display:none;"></span>
+    </div>
+
+    <div class="info-row">
+      <div class="info-chip">
+        <div class="label">Bits</div>
+        <div class="value">256</div>
+      </div>
+      <div class="info-chip">
+        <div class="label">Length</div>
+        <div class="value" id="lengthVal">—</div>
+      </div>
+      <div class="info-chip">
+        <div class="label">Entropy</div>
+        <div class="value">256 bit</div>
+      </div>
+    </div>
+
+    <button class="generate-btn" id="generateBtn" aria-label="Generate new GUID">
+      <i class="fa-solid fa-arrows-rotate"></i>
+      Generate GUID
+    </button>
+
+    <!-- QR Code Section -->
+    <div class="qr-section" id="qrSection">
+      <div class="qr-divider"></div>
+      <div class="qr-content">
+        <span class="qr-label">QR Code</span>
+        <div class="qr-frame" id="qrFrame">
+          <canvas id="qrCanvas"></canvas>
+        </div>
+        <div class="qr-actions">
+          <button class="qr-action-btn" id="qrCopyPng">
+            <i class="fa-regular fa-clipboard"></i>
+            Copy as PNG
+          </button>
+          <button class="qr-action-btn" id="qrDownload">
+            <i class="fa-solid fa-download"></i>
+            Download PNG
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- History -->
+    <section class="history-section" aria-label="Generation history">
+      <div class="history-header">
+        <h3>History</h3>
+        <button class="clear-btn" id="clearBtn">Clear all</button>
+      </div>
+      <div class="history-list" id="historyList">
+        <div class="empty-state" id="emptyState">No GUIDs generated yet</div>
+      </div>
+    </section>
+  </div>
+
+  <div class="kbd-hint">Press <kbd>Space</kbd> to generate &middot; <kbd>Q</kbd> to toggle QR &middot; <kbd>C</kbd> to copy</div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const B58_ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+  const B58_BASE = BigInt(B58_ALPHABET.length);
+
+  function random256() {
+    const bytes = new Uint8Array(32);
+    crypto.getRandomValues(bytes);
+    let result = 0n;
+    for (const b of bytes) {
+      result = (result << 8n) | BigInt(b);
+    }
+    return result;
+  }
+
+  function encodeBase58(num) {
+    if (num === 0n) return B58_ALPHABET[0];
+    let result = '';
+    let n = num;
+    while (n > 0n) {
+      const remainder = Number(n % B58_BASE);
+      result = B58_ALPHABET[remainder] + result;
+      n = n / B58_BASE;
+    }
+    return result;
+  }
+
+  function generateB58Guid() {
+    return encodeBase58(random256());
+  }
+
+  // DOM
+  const guidText = document.getElementById('guidText');
+  const placeholder = document.getElementById('placeholder');
+  const lengthVal = document.getElementById('lengthVal');
+  const generateBtn = document.getElementById('generateBtn');
+  const copyBtn = document.getElementById('copyBtn');
+  const qrToggleBtn = document.getElementById('qrToggleBtn');
+  const qrSection = document.getElementById('qrSection');
+  const qrCanvas = document.getElementById('qrCanvas');
+  const qrCopyPng = document.getElementById('qrCopyPng');
+  const qrDownload = document.getElementById('qrDownload');
+  const historyList = document.getElementById('historyList');
+  const emptyState = document.getElementById('emptyState');
+  const clearBtn = document.getElementById('clearBtn');
+  const toast = document.getElementById('toast');
+
+  let currentGuid = '';
+  let qrVisible = false;
+  const history = [];
+  const MAX_HISTORY = 10;
+
+  function showToast(msg, isError = false) {
+    toast.textContent = msg;
+    toast.classList.toggle('error', isError);
+    toast.classList.add('show');
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => toast.classList.remove('show'), 2000);
+  }
+
+  async function copyToClipboard(text) {
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast('GUID copied to clipboard');
+      copyBtn.classList.add('active');
+      copyBtn.innerHTML = '<i class="fa-solid fa-check"></i>';
+      setTimeout(() => {
+        copyBtn.classList.remove('active');
+        copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i>';
+      }, 1500);
+    } catch {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast('GUID copied to clipboard');
+    }
+  }
+
+  /**
+   * Render QR code onto the hidden canvas
+   */
+  async function renderQR(text) {
+    const size = 220;
+    await QRCode.toCanvas(qrCanvas, text, {
+      width: size,
+      margin: 0,
+      color: {
+        dark: '#0c0f14',
+        light: '#ffffff'
+      },
+      errorCorrectionLevel: 'M'
+    });
+  }
+
+  /**
+   * Create a high-res PNG blob from the QR canvas
+   * with padding and rounded corners baked in
+   */
+  function createQRPngBlob(scale = 3) {
+    const src = qrCanvas;
+    const padding = Math.round(src.width * 0.15);
+    const totalSize = (src.width + padding * 2) * scale;
+
+    const offscreen = document.createElement('canvas');
+    offscreen.width = totalSize;
+    offscreen.height = totalSize;
+    const ctx = offscreen.getContext('2d');
+
+    // White rounded-rect background
+    const r = 16 * scale;
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.moveTo(r, 0);
+    ctx.lineTo(totalSize - r, 0);
+    ctx.quadraticCurveTo(totalSize, 0, totalSize, r);
+    ctx.lineTo(totalSize, totalSize - r);
+    ctx.quadraticCurveTo(totalSize, totalSize, totalSize - r, totalSize);
+    ctx.lineTo(r, totalSize);
+    ctx.quadraticCurveTo(0, totalSize, 0, totalSize - r);
+    ctx.lineTo(0, r);
+    ctx.quadraticCurveTo(0, 0, r, 0);
+    ctx.closePath();
+    ctx.fill();
+
+    // Draw QR code scaled
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(src, padding * scale, padding * scale, src.width * scale, src.height * scale);
+
+    return new Promise(resolve => offscreen.toBlob(resolve, 'image/png'));
+  }
+
+  /**
+   * Copy QR as PNG to clipboard
+   */
+  async function copyQrAsPng() {
+    if (!currentGuid) return;
+    try {
+      const blob = await createQRPngBlob(3);
+      await navigator.clipboard.write([
+        new ClipboardItem({ 'image/png': blob })
+      ]);
+      qrCopyPng.classList.add('copied-state');
+      qrCopyPng.innerHTML = '<i class="fa-solid fa-check"></i> Copied';
+      showToast('QR PNG copied to clipboard');
+      setTimeout(() => {
+        qrCopyPng.classList.remove('copied-state');
+        qrCopyPng.innerHTML = '<i class="fa-regular fa-clipboard"></i> Copy as PNG';
+      }, 2000);
+    } catch (err) {
+      showToast('Clipboard API not supported for images', true);
+    }
+  }
+
+  /**
+   * Download QR as PNG file
+   */
+  async function downloadQrPng() {
+    if (!currentGuid) return;
+    try {
+      const blob = await createQRPngBlob(3);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `guid-${currentGuid.substring(0, 8)}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('QR PNG downloaded');
+    } catch {
+      showToast('Download failed', true);
+    }
+  }
+
+  function toggleQR() {
+    if (!currentGuid) return;
+    qrVisible = !qrVisible;
+    qrSection.classList.toggle('open', qrVisible);
+    qrToggleBtn.classList.toggle('active', qrVisible);
+
+    if (qrVisible) {
+      renderQR(currentGuid);
+    }
+  }
+
+  function addToHistory(guid) {
+    history.unshift(guid);
+    if (history.length > MAX_HISTORY) history.pop();
+    renderHistory();
+  }
+
+  function renderHistory() {
+    historyList.querySelectorAll('.history-item').forEach(el => el.remove());
+    if (history.length === 0) {
+      emptyState.style.display = 'block';
+      return;
+    }
+    emptyState.style.display = 'none';
+    history.forEach((guid) => {
+      const item = document.createElement('div');
+      item.className = 'history-item';
+
+      const guidSpan = document.createElement('span');
+      guidSpan.className = 'h-guid';
+      guidSpan.textContent = guid;
+      guidSpan.title = 'Click to copy';
+      guidSpan.addEventListener('click', () => copyToClipboard(guid));
+
+      const actions = document.createElement('div');
+      actions.className = 'h-actions';
+
+      const qrBtn = document.createElement('button');
+      qrBtn.className = 'h-icon-btn';
+      qrBtn.innerHTML = '<i class="fa-solid fa-qrcode"></i>';
+      qrBtn.title = 'Copy QR as PNG';
+      qrBtn.setAttribute('aria-label', 'Copy QR code as PNG for this GUID');
+      qrBtn.addEventListener('click', async () => {
+        try {
+          // Render temporarily to get the blob
+          const tmpCanvas = document.createElement('canvas');
+          await QRCode.toCanvas(tmpCanvas, guid, {
+            width: 220, margin: 0,
+            color: { dark: '#0c0f14', light: '#ffffff' },
+            errorCorrectionLevel: 'M'
+          });
+
+          const padding = Math.round(220 * 0.15);
+          const totalSize = (220 + padding * 2) * 3;
+          const offscreen = document.createElement('canvas');
+          offscreen.width = totalSize;
+          offscreen.height = totalSize;
+          const ctx = offscreen.getContext('2d');
+          const r = 48;
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.moveTo(r, 0);
+          ctx.lineTo(totalSize - r, 0);
+          ctx.quadraticCurveTo(totalSize, 0, totalSize, r);
+          ctx.lineTo(totalSize, totalSize - r);
+          ctx.quadraticCurveTo(totalSize, totalSize, totalSize - r, totalSize);
+          ctx.lineTo(r, totalSize);
+          ctx.quadraticCurveTo(0, totalSize, 0, totalSize - r);
+          ctx.lineTo(0, r);
+          ctx.quadraticCurveTo(0, 0, r, 0);
+          ctx.closePath();
+          ctx.fill();
+          ctx.imageSmoothingEnabled = false;
+          ctx.drawImage(tmpCanvas, padding * 3, padding * 3, 220 * 3, 220 * 3);
+
+          const blob = await new Promise(res => offscreen.toBlob(res, 'image/png'));
+          await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+          showToast('QR PNG copied to clipboard');
+        } catch {
+          showToast('Clipboard API not supported for images', true);
+        }
+      });
+
+      const copyBtnEl = document.createElement('button');
+      copyBtnEl.className = 'h-icon-btn';
+      copyBtnEl.innerHTML = '<i class="fa-regular fa-copy"></i>';
+      copyBtnEl.title = 'Copy text';
+      copyBtnEl.setAttribute('aria-label', 'Copy this GUID text');
+      copyBtnEl.addEventListener('click', () => copyToClipboard(guid));
+
+      actions.appendChild(qrBtn);
+      actions.appendChild(copyBtnEl);
+      item.appendChild(guidSpan);
+      item.appendChild(actions);
+      historyList.appendChild(item);
+    });
+  }
+
+  function doGenerate() {
+    currentGuid = generateB58Guid();
+
+    placeholder.style.display = 'none';
+    guidText.style.display = 'block';
+    guidText.textContent = currentGuid;
+    lengthVal.textContent = currentGuid.length + ' ch';
+
+    copyBtn.disabled = false;
+    qrToggleBtn.disabled = false;
+
+    guidText.classList.add('flash');
+    setTimeout(() => guidText.classList.remove('flash'), 400);
+
+    // If QR is visible, update it
+    if (qrVisible) {
+      renderQR(currentGuid);
+    }
+
+    addToHistory(currentGuid);
+  }
+
+  // Events
+  generateBtn.addEventListener('click', doGenerate);
+  copyBtn.addEventListener('click', () => copyToClipboard(currentGuid));
+  qrToggleBtn.addEventListener('click', toggleQR);
+  qrCopyPng.addEventListener('click', copyQrAsPng);
+  qrDownload.addEventListener('click', downloadQrPng);
+  clearBtn.addEventListener('click', () => {
+    history.length = 0;
+    renderHistory();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    const tag = e.target.tagName;
+    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) return;
+
+    if (e.code === 'Space') {
+      e.preventDefault();
+      doGenerate();
+    } else if (e.code === 'KeyQ' && !e.ctrlKey && !e.metaKey) {
+      e.preventDefault();
+      toggleQR();
+    } else if (e.code === 'KeyC' && !e.ctrlKey && !e.metaKey) {
+      e.preventDefault();
+      copyToClipboard(currentGuid);
+    }
+  });
+
+  // Particles
+  (function initParticles() {
+    const canvas = document.getElementById('particles');
+    const ctx = canvas.getContext('2d');
+    let w, h;
+    const particles = [];
+    const PARTICLE_COUNT = 45;
+
+    function resize() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      particles.push({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        r: Math.random() * 2 + 0.5,
+        alpha: Math.random() * 0.4 + 0.1,
+      });
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, w, h);
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 150) {
+            const alpha = (1 - dist / 150) * 0.08;
+            ctx.strokeStyle = `rgba(0,229,160,${alpha})`;
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+      for (const p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0) p.x = w;
+        if (p.x > w) p.x = 0;
+        if (p.y < 0) p.y = h;
+        if (p.y > h) p.y = 0;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, Math.max(0.1, p.r), 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(0,229,160,${p.alpha})`;
+        ctx.fill();
+      }
+      requestAnimationFrame(draw);
+    }
+
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      draw();
+    }
+  })();
+</script>
+</body>
+</html>
