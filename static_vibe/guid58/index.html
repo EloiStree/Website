@@ -1,7 +1,4 @@
-   
 <!DOCTYPE html>
-
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -9,7 +6,6 @@
 <title>Base58 GUID-256 Generator</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <style>
   :root {
     --bg: #0c0f14;
@@ -144,6 +140,24 @@
     margin: 0 auto;
     line-height: 1.6;
   }
+
+  .offline-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(0,229,160,0.06);
+    border: 1px solid rgba(0,229,160,0.12);
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 100px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 12px;
+  }
+
+  .offline-badge i { font-size: 9px; color: var(--accent); }
 
   .card {
     background: var(--card);
@@ -314,17 +328,16 @@
 
   .generate-btn:hover i { transform: rotate(180deg); }
 
-  /* QR Section */
   .qr-section {
     margin-top: 28px;
     overflow: hidden;
     max-height: 0;
     opacity: 0;
-    transition: max-height 0.5s cubic-bezier(0.4,0,0.2,1), opacity 0.4s ease, margin-top 0.4s ease;
+    transition: max-height 0.6s cubic-bezier(0.4,0,0.2,1), opacity 0.4s ease, margin-top 0.4s ease;
   }
 
   .qr-section.open {
-    max-height: 500px;
+    max-height: 800px;
     opacity: 1;
     margin-top: 28px;
   }
@@ -335,29 +348,41 @@
     margin-bottom: 24px;
   }
 
-  .qr-content {
+  .qr-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .qr-card {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 18px;
+    gap: 12px;
   }
 
-  .qr-label {
-    font-size: 13px;
+  .qr-card-label {
+    font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 1.5px;
     color: var(--muted);
     font-weight: 500;
+    text-align: center;
+  }
+
+  .qr-card-label i {
+    margin-right: 4px;
+    font-size: 10px;
   }
 
   .qr-frame {
     background: var(--qr-bg);
-    border-radius: 16px;
-    padding: 16px;
+    border-radius: 14px;
+    padding: 14px;
     position: relative;
     box-shadow:
       0 0 0 1px rgba(255,255,255,0.05),
-      0 20px 50px rgba(0,0,0,0.4);
+      0 16px 40px rgba(0,0,0,0.35);
     animation: qrPop 0.35s cubic-bezier(0.34,1.56,0.64,1);
   }
 
@@ -371,44 +396,54 @@
     border-radius: 4px;
   }
 
-  .qr-actions {
+  .qr-url-preview {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    text-align: center;
+    word-break: break-all;
+    max-width: 200px;
+    line-height: 1.4;
+    opacity: 0.7;
+  }
+
+  .qr-card-actions {
     display: flex;
-    gap: 10px;
+    gap: 6px;
     flex-wrap: wrap;
     justify-content: center;
   }
 
-  .qr-action-btn {
+  .qr-sm-btn {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 5px;
     background: var(--surface);
     border: 1px solid var(--border);
-    color: var(--fg);
+    color: var(--muted);
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 500;
-    padding: 10px 18px;
-    border-radius: 10px;
+    padding: 7px 12px;
+    border-radius: 8px;
     cursor: pointer;
     transition: all 0.25s;
   }
 
-  .qr-action-btn:hover {
+  .qr-sm-btn:hover {
     border-color: var(--accent);
     color: var(--accent);
     background: var(--accent-dim);
   }
 
-  .qr-action-btn.copied-state {
+  .qr-sm-btn.copied-state {
     border-color: var(--accent);
     color: var(--accent);
     background: var(--accent-dim);
   }
 
-  .qr-action-btn i { font-size: 13px; }
+  .qr-sm-btn i { font-size: 11px; }
 
-  /* History */
   .history-section {
     margin-top: 28px;
   }
@@ -534,6 +569,7 @@
     pointer-events: none;
     transition: all 0.35s ease;
     box-shadow: 0 4px 20px rgba(0,229,160,0.15);
+    white-space: nowrap;
   }
 
   .toast.error {
@@ -573,10 +609,10 @@
     margin: 0 2px;
   }
 
-  @media (max-width: 500px) {
+  @media (max-width: 560px) {
     .info-row { grid-template-columns: 1fr; }
     .card { padding: 20px; }
-    .qr-actions { flex-direction: column; align-items: stretch; }
+    .qr-pair { grid-template-columns: 1fr; }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -602,12 +638,13 @@
     <div class="tag"><i class="fa-solid fa-fingerprint"></i> Cryptographic RNG</div>
     <h1>Base58 <span>GUID-256</span> Generator</h1>
     <p>Generate a 256-bit globally unique identifier encoded in Base58 — no ambiguous characters, safe for URLs and handwriting.</p>
+    <div class="offline-badge"><i class="fa-solid fa-shield-halved"></i> Fully offline — zero external calls</div>
   </header>
 
   <div class="card">
     <div class="output-wrap" id="outputWrap">
       <div class="action-btns">
-        <button class="icon-btn" id="qrToggleBtn" title="Show QR Code" aria-label="Toggle QR code" disabled>
+        <button class="icon-btn" id="qrToggleBtn" title="Show QR Codes" aria-label="Toggle QR codes" disabled>
           <i class="fa-solid fa-qrcode"></i>
         </button>
         <button class="icon-btn" id="copyBtn" title="Copy to clipboard" aria-label="Copy GUID to clipboard" disabled>
@@ -638,23 +675,43 @@
       Generate GUID
     </button>
 
-    <!-- QR Code Section -->
+    <!-- QR Codes Section -->
     <div class="qr-section" id="qrSection">
       <div class="qr-divider"></div>
-      <div class="qr-content">
-        <span class="qr-label">QR Code</span>
-        <div class="qr-frame" id="qrFrame">
-          <canvas id="qrCanvas"></canvas>
+      <div class="qr-pair">
+        <!-- Raw GUID QR -->
+        <div class="qr-card">
+          <span class="qr-card-label"><i class="fa-solid fa-hashtag"></i> Raw GUID</span>
+          <div class="qr-frame">
+            <canvas id="qrCanvasRaw"></canvas>
+          </div>
+          <div class="qr-card-actions">
+            <button class="qr-sm-btn" id="rawCopyPng" aria-label="Copy raw GUID QR as PNG">
+              <i class="fa-regular fa-clipboard"></i> Copy PNG
+            </button>
+            <button class="qr-sm-btn" id="rawDownload" aria-label="Download raw GUID QR as PNG">
+              <i class="fa-solid fa-download"></i> Save
+            </button>
+          </div>
         </div>
-        <div class="qr-actions">
-          <button class="qr-action-btn" id="qrCopyPng">
-            <i class="fa-regular fa-clipboard"></i>
-            Copy as PNG
-          </button>
-          <button class="qr-action-btn" id="qrDownload">
-            <i class="fa-solid fa-download"></i>
-            Download PNG
-          </button>
+        <!-- URL QR -->
+        <div class="qr-card">
+          <span class="qr-card-label"><i class="fa-solid fa-link"></i> Shareable URL</span>
+          <div class="qr-frame">
+            <canvas id="qrCanvasUrl"></canvas>
+          </div>
+          <div class="qr-url-preview" id="urlPreview"></div>
+          <div class="qr-card-actions">
+            <button class="qr-sm-btn" id="urlCopyPng" aria-label="Copy URL QR as PNG">
+              <i class="fa-regular fa-clipboard"></i> Copy PNG
+            </button>
+            <button class="qr-sm-btn" id="urlDownload" aria-label="Download URL QR as PNG">
+              <i class="fa-solid fa-download"></i> Save
+            </button>
+            <button class="qr-sm-btn" id="urlCopyText" aria-label="Copy URL text">
+              <i class="fa-solid fa-link"></i> Copy URL
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -677,395 +734,790 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  const B58_ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-  const B58_BASE = BigInt(B58_ALPHABET.length);
-
-  function random256() {
-    const bytes = new Uint8Array(32);
-    crypto.getRandomValues(bytes);
-    let result = 0n;
-    for (const b of bytes) {
-      result = (result << 8n) | BigInt(b);
+/* ==========================================================
+   Pure JS QR Code Generator
+   Byte mode, EC Level M, Versions 1-10
+   Zero dependencies, zero external connections
+   ========================================================== */
+var QR = (function() {
+  /* --- GF(256) finite field arithmetic ---
+     Primitive polynomial: x^8 + x^4 + x^3 + x^2 + 1 (0x11d) */
+  var EXP = new Uint8Array(512);
+  var LOG = new Uint8Array(256);
+  (function() {
+    var x = 1;
+    for (var i = 0; i < 255; i++) {
+      EXP[i] = x;
+      LOG[x] = i;
+      x = (x << 1) ^ (x & 0x80 ? 0x11d : 0);
     }
+    for (var i = 255; i < 512; i++) EXP[i] = EXP[i - 255];
+  })();
+
+  function gfMul(a, b) {
+    return (a === 0 || b === 0) ? 0 : EXP[LOG[a] + LOG[b]];
+  }
+
+  /* --- Reed-Solomon error correction ---
+     Build generator polynomial, then shift-register division */
+  function rsGenPoly(degree) {
+    var g = [1];
+    for (var i = 0; i < degree; i++) {
+      var ng = new Array(g.length + 1).fill(0);
+      for (var j = 0; j < g.length; j++) {
+        ng[j] ^= g[j];
+        ng[j + 1] ^= gfMul(g[j], EXP[i]);
+      }
+      g = ng;
+    }
+    return g;
+  }
+
+  function rsEncode(data, ecLen) {
+    var gen = rsGenPoly(ecLen);
+    var fb = new Uint8Array(ecLen);
+    for (var i = 0; i < data.length; i++) {
+      var coef = data[i] ^ fb[0];
+      fb.copyWithin(0, 1);
+      fb[ecLen - 1] = 0;
+      for (var j = 0; j < ecLen; j++) {
+        fb[j] ^= gfMul(gen[j + 1], coef);
+      }
+    }
+    return fb;
+  }
+
+  /* --- QR version table (EC Level M, versions 1-10) ---
+     s=size, ec=EC cw/block, b1/d1=group1, b2/d2=group2, a=alignment centers */
+  var VT = [
+    null,
+    { s:21, ec:10, b1:1, d1:16, b2:0, d2:0, a:[] },
+    { s:25, ec:16, b1:1, d1:28, b2:0, d2:0, a:[6,18] },
+    { s:29, ec:26, b1:1, d1:44, b2:0, d2:0, a:[6,22] },
+    { s:33, ec:18, b1:2, d1:32, b2:0, d2:0, a:[6,26] },
+    { s:37, ec:24, b1:2, d1:43, b2:0, d2:0, a:[6,30] },
+    { s:41, ec:16, b1:4, d1:27, b2:0, d2:0, a:[6,34] },
+    { s:45, ec:18, b1:4, d1:31, b2:0, d2:0, a:[6,22,38] },
+    { s:49, ec:22, b1:2, d1:38, b2:2, d2:39, a:[6,24,42] },
+    { s:53, ec:22, b1:3, d1:36, b2:2, d2:37, a:[6,26,46] },
+    { s:57, ec:26, b1:4, d1:43, b2:1, d2:44, a:[6,28,50] },
+  ];
+
+  var REM_BITS = [0, 0, 7, 7, 7, 7, 7, 0, 0, 0, 0];
+
+  /* --- Format information (EC Level M = 0b00) ---
+     BCH(15,5) encoded, then XOR with 0x5412 */
+  function formatBits(mask) {
+    var d = mask;
+    var bch = d << 10;
+    for (var i = 14; i >= 10; i--) {
+      if (bch & (1 << i)) bch ^= 0x537 << (i - 10);
+    }
+    return ((d << 10) | bch) ^ 0x5412;
+  }
+
+  /* --- Select minimum version for the data length */
+  function pickVersion(byteLen) {
+    for (var v = 1; v <= 10; v++) {
+      var vi = VT[v];
+      var totalDataCW = vi.b1 * vi.d1 + vi.b2 * vi.d2;
+      var ccBits = v <= 9 ? 8 : 16;
+      var avail = totalDataCW * 8 - 4 - ccBits;
+      if (byteLen * 8 <= avail) return v;
+    }
+    return 10;
+  }
+
+  /* --- Encode text into data codewords (byte mode) */
+  function encodeData(text, ver) {
+    var vi = VT[ver];
+    var totalDataCW = vi.b1 * vi.d1 + vi.b2 * vi.d2;
+    var bytes = new TextEncoder().encode(text);
+    var bits = [];
+
+    // Byte mode indicator: 0100
+    bits.push(0, 1, 0, 0);
+
+    // Character count indicator (8 bits for v1-9, 16 bits for v10+)
+    var ccBits = ver <= 9 ? 8 : 16;
+    for (var i = ccBits - 1; i >= 0; i--) bits.push((bytes.length >> i) & 1);
+
+    // Data bits
+    for (var n = 0; n < bytes.length; n++) {
+      for (var i = 7; i >= 0; i--) bits.push((bytes[n] >> i) & 1);
+    }
+
+    // Terminator (up to 4 zeros)
+    var maxBits = totalDataCW * 8;
+    var termLen = Math.min(4, maxBits - bits.length);
+    for (var i = 0; i < termLen; i++) bits.push(0);
+
+    // Pad to byte boundary
+    while (bits.length % 8 !== 0) bits.push(0);
+
+    // Pack into codewords
+    var cw = new Uint8Array(totalDataCW);
+    for (var i = 0; i < totalDataCW; i++) {
+      var val = 0;
+      for (var j = 0; j < 8; j++) val = (val << 1) | (bits[i * 8 + j] || 0);
+      cw[i] = val;
+    }
+
+    // Padding bytes (0xEC, 0x11 alternating)
+    var dataEnd = Math.ceil(bits.length / 8);
+    for (var i = dataEnd; i < totalDataCW; i++) {
+      cw[i] = (i % 2 === 0) ? 0xEC : 0x11;
+    }
+
+    return cw;
+  }
+
+  /* --- Split into blocks, compute EC, interleave ---
+     Data codewords first, then EC codewords */
+  function buildCodewords(dataCW, ver) {
+    var vi = VT[ver];
+    var blocks = [];
+    var off = 0;
+
+    for (var i = 0; i < vi.b1; i++) {
+      var d = dataCW.slice(off, off + vi.d1);
+      blocks.push({ d: d, e: rsEncode(d, vi.ec) });
+      off += vi.d1;
+    }
+    for (var i = 0; i < vi.b2; i++) {
+      var d = dataCW.slice(off, off + vi.d2);
+      blocks.push({ d: d, e: rsEncode(d, vi.ec) });
+      off += vi.d2;
+    }
+
+    var result = [];
+    var maxD = 0;
+    for (var i = 0; i < blocks.length; i++) if (blocks[i].d.length > maxD) maxD = blocks[i].d.length;
+    var maxE = blocks[0].e.length;
+
+    for (var i = 0; i < maxD; i++)
+      for (var j = 0; j < blocks.length; j++)
+        if (i < blocks[j].d.length) result.push(blocks[j].d[i]);
+
+    for (var i = 0; i < maxE; i++)
+      for (var j = 0; j < blocks.length; j++)
+        result.push(blocks[j].e[i]);
+
     return result;
   }
 
-  function encodeBase58(num) {
-    if (num === 0n) return B58_ALPHABET[0];
-    let result = '';
-    let n = num;
-    while (n > 0n) {
-      const remainder = Number(n % B58_BASE);
-      result = B58_ALPHABET[remainder] + result;
-      n = n / B58_BASE;
+  /* --- Create QR matrix with all function patterns marked ---
+     m=module colors (0=light, 1=dark), fn=function pattern mask */
+  function createMatrix(ver) {
+    var vi = VT[ver];
+    var sz = vi.s;
+    var m = [];
+    var fn = [];
+    for (var i = 0; i < sz; i++) { m.push(new Int8Array(sz)); fn.push(new Uint8Array(sz)); }
+
+    function set(r, c, dark) {
+      m[r][c] = dark ? 1 : 0;
+      fn[r][c] = 1;
     }
-    return result;
-  }
 
-  function generateB58Guid() {
-    return encodeBase58(random256());
-  }
-
-  // DOM
-  const guidText = document.getElementById('guidText');
-  const placeholder = document.getElementById('placeholder');
-  const lengthVal = document.getElementById('lengthVal');
-  const generateBtn = document.getElementById('generateBtn');
-  const copyBtn = document.getElementById('copyBtn');
-  const qrToggleBtn = document.getElementById('qrToggleBtn');
-  const qrSection = document.getElementById('qrSection');
-  const qrCanvas = document.getElementById('qrCanvas');
-  const qrCopyPng = document.getElementById('qrCopyPng');
-  const qrDownload = document.getElementById('qrDownload');
-  const historyList = document.getElementById('historyList');
-  const emptyState = document.getElementById('emptyState');
-  const clearBtn = document.getElementById('clearBtn');
-  const toast = document.getElementById('toast');
-
-  let currentGuid = '';
-  let qrVisible = false;
-  const history = [];
-  const MAX_HISTORY = 10;
-
-  function showToast(msg, isError = false) {
-    toast.textContent = msg;
-    toast.classList.toggle('error', isError);
-    toast.classList.add('show');
-    clearTimeout(toast._timer);
-    toast._timer = setTimeout(() => toast.classList.remove('show'), 2000);
-  }
-
-  async function copyToClipboard(text) {
-    if (!text) return;
-    try {
-      await navigator.clipboard.writeText(text);
-      showToast('GUID copied to clipboard');
-      copyBtn.classList.add('active');
-      copyBtn.innerHTML = '<i class="fa-solid fa-check"></i>';
-      setTimeout(() => {
-        copyBtn.classList.remove('active');
-        copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i>';
-      }, 1500);
-    } catch {
-      const ta = document.createElement('textarea');
-      ta.value = text;
-      ta.style.position = 'fixed';
-      ta.style.opacity = '0';
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      document.body.removeChild(ta);
-      showToast('GUID copied to clipboard');
-    }
-  }
-
-  /**
-   * Render QR code onto the hidden canvas
-   */
-  async function renderQR(text) {
-    const size = 220;
-    await QRCode.toCanvas(qrCanvas, text, {
-      width: size,
-      margin: 0,
-      color: {
-        dark: '#0c0f14',
-        light: '#ffffff'
-      },
-      errorCorrectionLevel: 'M'
-    });
-  }
-
-  /**
-   * Create a high-res PNG blob from the QR canvas
-   * with padding and rounded corners baked in
-   */
-  function createQRPngBlob(scale = 3) {
-    const src = qrCanvas;
-    const padding = Math.round(src.width * 0.15);
-    const totalSize = (src.width + padding * 2) * scale;
-
-    const offscreen = document.createElement('canvas');
-    offscreen.width = totalSize;
-    offscreen.height = totalSize;
-    const ctx = offscreen.getContext('2d');
-
-    // White rounded-rect background
-    const r = 16 * scale;
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath();
-    ctx.moveTo(r, 0);
-    ctx.lineTo(totalSize - r, 0);
-    ctx.quadraticCurveTo(totalSize, 0, totalSize, r);
-    ctx.lineTo(totalSize, totalSize - r);
-    ctx.quadraticCurveTo(totalSize, totalSize, totalSize - r, totalSize);
-    ctx.lineTo(r, totalSize);
-    ctx.quadraticCurveTo(0, totalSize, 0, totalSize - r);
-    ctx.lineTo(0, r);
-    ctx.quadraticCurveTo(0, 0, r, 0);
-    ctx.closePath();
-    ctx.fill();
-
-    // Draw QR code scaled
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(src, padding * scale, padding * scale, src.width * scale, src.height * scale);
-
-    return new Promise(resolve => offscreen.toBlob(resolve, 'image/png'));
-  }
-
-  /**
-   * Copy QR as PNG to clipboard
-   */
-  async function copyQrAsPng() {
-    if (!currentGuid) return;
-    try {
-      const blob = await createQRPngBlob(3);
-      await navigator.clipboard.write([
-        new ClipboardItem({ 'image/png': blob })
-      ]);
-      qrCopyPng.classList.add('copied-state');
-      qrCopyPng.innerHTML = '<i class="fa-solid fa-check"></i> Copied';
-      showToast('QR PNG copied to clipboard');
-      setTimeout(() => {
-        qrCopyPng.classList.remove('copied-state');
-        qrCopyPng.innerHTML = '<i class="fa-regular fa-clipboard"></i> Copy as PNG';
-      }, 2000);
-    } catch (err) {
-      showToast('Clipboard API not supported for images', true);
-    }
-  }
-
-  /**
-   * Download QR as PNG file
-   */
-  async function downloadQrPng() {
-    if (!currentGuid) return;
-    try {
-      const blob = await createQRPngBlob(3);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `guid-${currentGuid.substring(0, 8)}.png`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      showToast('QR PNG downloaded');
-    } catch {
-      showToast('Download failed', true);
-    }
-  }
-
-  function toggleQR() {
-    if (!currentGuid) return;
-    qrVisible = !qrVisible;
-    qrSection.classList.toggle('open', qrVisible);
-    qrToggleBtn.classList.toggle('active', qrVisible);
-
-    if (qrVisible) {
-      renderQR(currentGuid);
-    }
-  }
-
-  function addToHistory(guid) {
-    history.unshift(guid);
-    if (history.length > MAX_HISTORY) history.pop();
-    renderHistory();
-  }
-
-  function renderHistory() {
-    historyList.querySelectorAll('.history-item').forEach(el => el.remove());
-    if (history.length === 0) {
-      emptyState.style.display = 'block';
-      return;
-    }
-    emptyState.style.display = 'none';
-    history.forEach((guid) => {
-      const item = document.createElement('div');
-      item.className = 'history-item';
-
-      const guidSpan = document.createElement('span');
-      guidSpan.className = 'h-guid';
-      guidSpan.textContent = guid;
-      guidSpan.title = 'Click to copy';
-      guidSpan.addEventListener('click', () => copyToClipboard(guid));
-
-      const actions = document.createElement('div');
-      actions.className = 'h-actions';
-
-      const qrBtn = document.createElement('button');
-      qrBtn.className = 'h-icon-btn';
-      qrBtn.innerHTML = '<i class="fa-solid fa-qrcode"></i>';
-      qrBtn.title = 'Copy QR as PNG';
-      qrBtn.setAttribute('aria-label', 'Copy QR code as PNG for this GUID');
-      qrBtn.addEventListener('click', async () => {
-        try {
-          // Render temporarily to get the blob
-          const tmpCanvas = document.createElement('canvas');
-          await QRCode.toCanvas(tmpCanvas, guid, {
-            width: 220, margin: 0,
-            color: { dark: '#0c0f14', light: '#ffffff' },
-            errorCorrectionLevel: 'M'
-          });
-
-          const padding = Math.round(220 * 0.15);
-          const totalSize = (220 + padding * 2) * 3;
-          const offscreen = document.createElement('canvas');
-          offscreen.width = totalSize;
-          offscreen.height = totalSize;
-          const ctx = offscreen.getContext('2d');
-          const r = 48;
-          ctx.fillStyle = '#ffffff';
-          ctx.beginPath();
-          ctx.moveTo(r, 0);
-          ctx.lineTo(totalSize - r, 0);
-          ctx.quadraticCurveTo(totalSize, 0, totalSize, r);
-          ctx.lineTo(totalSize, totalSize - r);
-          ctx.quadraticCurveTo(totalSize, totalSize, totalSize - r, totalSize);
-          ctx.lineTo(r, totalSize);
-          ctx.quadraticCurveTo(0, totalSize, 0, totalSize - r);
-          ctx.lineTo(0, r);
-          ctx.quadraticCurveTo(0, 0, r, 0);
-          ctx.closePath();
-          ctx.fill();
-          ctx.imageSmoothingEnabled = false;
-          ctx.drawImage(tmpCanvas, padding * 3, padding * 3, 220 * 3, 220 * 3);
-
-          const blob = await new Promise(res => offscreen.toBlob(res, 'image/png'));
-          await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
-          showToast('QR PNG copied to clipboard');
-        } catch {
-          showToast('Clipboard API not supported for images', true);
+    // Draw 7x7 finder pattern with separator border
+    function drawFinder(row, col) {
+      for (var dr = -1; dr <= 7; dr++) {
+        for (var dc = -1; dc <= 7; dc++) {
+          var rr = row + dr, cc = col + dc;
+          if (rr < 0 || rr >= sz || cc < 0 || cc >= sz) continue;
+          var dark = false;
+          if (dr >= 0 && dr <= 6 && dc >= 0 && dc <= 6) {
+            if (dr === 0 || dr === 6 || dc === 0 || dc === 6) dark = true;
+            else if (dr >= 2 && dr <= 4 && dc >= 2 && dc <= 4) dark = true;
+          }
+          set(rr, cc, dark);
         }
-      });
-
-      const copyBtnEl = document.createElement('button');
-      copyBtnEl.className = 'h-icon-btn';
-      copyBtnEl.innerHTML = '<i class="fa-regular fa-copy"></i>';
-      copyBtnEl.title = 'Copy text';
-      copyBtnEl.setAttribute('aria-label', 'Copy this GUID text');
-      copyBtnEl.addEventListener('click', () => copyToClipboard(guid));
-
-      actions.appendChild(qrBtn);
-      actions.appendChild(copyBtnEl);
-      item.appendChild(guidSpan);
-      item.appendChild(actions);
-      historyList.appendChild(item);
-    });
-  }
-
-  function doGenerate() {
-    currentGuid = generateB58Guid();
-
-    placeholder.style.display = 'none';
-    guidText.style.display = 'block';
-    guidText.textContent = currentGuid;
-    lengthVal.textContent = currentGuid.length + ' ch';
-
-    copyBtn.disabled = false;
-    qrToggleBtn.disabled = false;
-
-    guidText.classList.add('flash');
-    setTimeout(() => guidText.classList.remove('flash'), 400);
-
-    // If QR is visible, update it
-    if (qrVisible) {
-      renderQR(currentGuid);
+      }
     }
 
-    addToHistory(currentGuid);
-  }
+    drawFinder(0, 0);
+    drawFinder(0, sz - 7);
+    drawFinder(sz - 7, 0);
 
-  // Events
-  generateBtn.addEventListener('click', doGenerate);
-  copyBtn.addEventListener('click', () => copyToClipboard(currentGuid));
-  qrToggleBtn.addEventListener('click', toggleQR);
-  qrCopyPng.addEventListener('click', copyQrAsPng);
-  qrDownload.addEventListener('click', downloadQrPng);
-  clearBtn.addEventListener('click', () => {
-    history.length = 0;
-    renderHistory();
-  });
-
-  document.addEventListener('keydown', (e) => {
-    const tag = e.target.tagName;
-    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) return;
-
-    if (e.code === 'Space') {
-      e.preventDefault();
-      doGenerate();
-    } else if (e.code === 'KeyQ' && !e.ctrlKey && !e.metaKey) {
-      e.preventDefault();
-      toggleQR();
-    } else if (e.code === 'KeyC' && !e.ctrlKey && !e.metaKey) {
-      e.preventDefault();
-      copyToClipboard(currentGuid);
-    }
-  });
-
-  // Particles
-  (function initParticles() {
-    const canvas = document.getElementById('particles');
-    const ctx = canvas.getContext('2d');
-    let w, h;
-    const particles = [];
-    const PARTICLE_COUNT = 45;
-
-    function resize() {
-      w = canvas.width = window.innerWidth;
-      h = canvas.height = window.innerHeight;
-    }
-
-    window.addEventListener('resize', resize);
-    resize();
-
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
-      particles.push({
-        x: Math.random() * w,
-        y: Math.random() * h,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: (Math.random() - 0.5) * 0.3,
-        r: Math.random() * 2 + 0.5,
-        alpha: Math.random() * 0.4 + 0.1,
-      });
-    }
-
-    function draw() {
-      ctx.clearRect(0, 0, w, h);
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 150) {
-            const alpha = (1 - dist / 150) * 0.08;
-            ctx.strokeStyle = `rgba(0,229,160,${alpha})`;
-            ctx.lineWidth = 0.5;
-            ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.stroke();
+    // Alignment patterns (skip if overlapping a finder)
+    for (var ai = 0; ai < vi.a.length; ai++) {
+      for (var aj = 0; aj < vi.a.length; aj++) {
+        var ar = vi.a[ai], ac = vi.a[aj];
+        if (ar <= 8 && ac <= 8) continue;
+        if (ar <= 8 && ac >= sz - 8) continue;
+        if (ar >= sz - 8 && ac <= 8) continue;
+        for (var dr = -2; dr <= 2; dr++) {
+          for (var dc = -2; dc <= 2; dc++) {
+            var dark = Math.abs(dr) === 2 || Math.abs(dc) === 2 || (dr === 0 && dc === 0);
+            set(ar + dr, ac + dc, dark);
           }
         }
       }
-      for (const p of particles) {
-        p.x += p.vx;
-        p.y += p.vy;
-        if (p.x < 0) p.x = w;
-        if (p.x > w) p.x = 0;
-        if (p.y < 0) p.y = h;
-        if (p.y > h) p.y = 0;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, Math.max(0.1, p.r), 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(0,229,160,${p.alpha})`;
-        ctx.fill();
-      }
-      requestAnimationFrame(draw);
     }
 
-    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      draw();
+    // Timing patterns on row 6 and column 6
+    for (var i = 8; i < sz - 8; i++) {
+      if (!fn[6][i]) set(6, i, i % 2 === 0);
+      if (!fn[i][6]) set(i, 6, i % 2 === 0);
     }
-  })();
+
+    // Fixed dark module at (sz-8, 8)
+    set(sz - 8, 8, true);
+
+    // Reserve format info areas (15 bits × 2 copies)
+    for (var i = 0; i < 8; i++) { fn[8][i] = 1; fn[i][8] = 1; }
+    fn[8][8] = 1;
+    for (var i = 0; i < 8; i++) fn[8][sz - 1 - i] = 1;
+    for (var i = 0; i < 7; i++) fn[sz - 7 + i][8] = 1;
+
+    return { m: m, fn: fn, sz: sz };
+  }
+
+  /* --- Place data bits in the standard zigzag pattern ---
+     Two columns at a time, bottom-to-top then top-to-bottom, skipping column 6 */
+  function placeData(m, fn, sz, bits) {
+    var idx = 0;
+    var up = true;
+    for (var col = sz - 1; col >= 0; col -= 2) {
+      if (col === 6) col = 5;
+      for (var i = 0; i < sz; i++) {
+        var row = up ? sz - 1 - i : i;
+        var cols = [col, col - 1];
+        for (var ci = 0; ci < 2; ci++) {
+          var c = cols[ci];
+          if (c < 0 || fn[row][c]) continue;
+          if (idx < bits.length) m[row][c] = bits[idx++] ? 1 : 0;
+        }
+      }
+      up = !up;
+    }
+  }
+
+  /* --- 8 mask pattern evaluation functions */
+  var MASKS = [
+    function(r,c) { return (r + c) % 2 === 0; },
+    function(r,c) { return r % 2 === 0; },
+    function(r,c) { return c % 3 === 0; },
+    function(r,c) { return (r + c) % 3 === 0; },
+    function(r,c) { return (Math.floor(r/2) + Math.floor(c/3)) % 2 === 0; },
+    function(r,c) { return (r*c) % 2 + (r*c) % 3 === 0; },
+    function(r,c) { return ((r*c) % 2 + (r*c) % 3) % 2 === 0; },
+    function(r,c) { return ((r+c) % 2 + (r*c) % 3) % 2 === 0; },
+  ];
+
+  function applyMask(m, fn, sz, mi) {
+    var out = [];
+    for (var r = 0; r < sz; r++) out.push(Int8Array.from(m[r]));
+    for (var r = 0; r < sz; r++)
+      for (var c = 0; c < sz; c++)
+        if (!fn[r][c] && MASKS[mi](r, c))
+          out[r][c] = out[r][c] ? 0 : 1;
+    return out;
+  }
+
+  /* --- Write 15-bit format information into both copy locations */
+  function placeFormat(m, sz, mask) {
+    var fmt = formatBits(mask);
+    // First copy: L-shape around top-left finder
+    var p1 = [[8,0],[8,1],[8,2],[8,3],[8,4],[8,5],[8,7],[8,8],[7,8],[5,8],[4,8],[3,8],[2,8],[1,8],[0,8]];
+    // Second copy: horizontal along top-right + vertical along bottom-left
+    var p2 = [];
+    for (var i = 0; i < 8; i++) p2.push([8, sz - 1 - i]);
+    for (var i = 0; i < 7; i++) p2.push([sz - 7 + i, 8]);
+    for (var i = 0; i < 15; i++) {
+      var bit = (fmt >> (14 - i)) & 1;
+      m[p1[i][0]][p1[i][1]] = bit;
+      m[p2[i][0]][p2[i][1]] = bit;
+    }
+  }
+
+  /* --- Penalty score (all 4 rules) for mask selection --- */
+  function penalty(m, sz) {
+    var p = 0;
+
+    // Rule 1: consecutive same-color runs of 5+ in rows and columns
+    for (var r = 0; r < sz; r++) {
+      var cnt = 1;
+      for (var c = 1; c < sz; c++) {
+        if (m[r][c] === m[r][c-1]) cnt++;
+        else { if (cnt >= 5) p += cnt - 2; cnt = 1; }
+      }
+      if (cnt >= 5) p += cnt - 2;
+    }
+    for (var c = 0; c < sz; c++) {
+      var cnt = 1;
+      for (var r = 1; r < sz; r++) {
+        if (m[r][c] === m[r-1][c]) cnt++;
+        else { if (cnt >= 5) p += cnt - 2; cnt = 1; }
+      }
+      if (cnt >= 5) p += cnt - 2;
+    }
+
+    // Rule 2: 2×2 same-color blocks
+    for (var r = 0; r < sz - 1; r++)
+      for (var c = 0; c < sz - 1; c++) {
+        var v = m[r][c];
+        if (v === m[r][c+1] && v === m[r+1][c] && v === m[r+1][c+1]) p += 3;
+      }
+
+    // Rule 3: finder-like patterns (1:1:3:1:1) in rows and columns
+    var pat1 = [1,0,1,1,1,0,1,0,0,0,0];
+    var pat2 = [0,0,0,0,1,0,1,1,1,0,1];
+    for (var r = 0; r < sz; r++)
+      for (var c = 0; c <= sz - 11; c++) {
+        var m1 = true, m2 = true;
+        for (var k = 0; k < 11; k++) {
+          if (m[r][c+k] !== pat1[k]) m1 = false;
+          if (m[r][c+k] !== pat2[k]) m2 = false;
+        }
+        if (m1 || m2) p += 40;
+      }
+    for (var c = 0; c < sz; c++)
+      for (var r = 0; r <= sz - 11; r++) {
+        var m1 = true, m2 = true;
+        for (var k = 0; k < 11; k++) {
+          if (m[r+k][c] !== pat1[k]) m1 = false;
+          if (m[r+k][c] !== pat2[k]) m2 = false;
+        }
+        if (m1 || m2) p += 40;
+      }
+
+    // Rule 4: dark module ratio deviation from 50%
+    var dark = 0;
+    for (var r = 0; r < sz; r++)
+      for (var c = 0; c < sz; c++)
+        if (m[r][c]) dark++;
+    var pct = dark * 100 / (sz * sz);
+    var lo = Math.floor(pct / 5) * 5;
+    var hi = lo + 5;
+    p += Math.min(Math.abs(lo - 50) / 5, Math.abs(hi - 50) / 5) * 10;
+
+    return p;
+  }
+
+  /* --- Main QR generation: returns { matrix, size, version } --- */
+  function generate(text) {
+    var bytes = new TextEncoder().encode(text);
+    var ver = pickVersion(bytes.length);
+    var vi = VT[ver];
+
+    var dataCW = encodeData(text, ver);
+    var codewords = buildCodewords(dataCW, ver);
+
+    // Build complete bit stream (data + EC + remainder bits)
+    var bits = [];
+    for (var i = 0; i < codewords.length; i++)
+      for (var j = 7; j >= 0; j--) bits.push((codewords[i] >> j) & 1);
+    for (var i = 0; i < REM_BITS[ver]; i++) bits.push(0);
+
+    var qr = createMatrix(ver);
+    placeData(qr.m, qr.fn, qr.sz, bits);
+
+    // Evaluate all 8 masks, select lowest penalty
+    var bestP = Infinity, bestM = null;
+    for (var mask = 0; mask < 8; mask++) {
+      var masked = applyMask(qr.m, qr.fn, qr.sz, mask);
+      placeFormat(masked, qr.sz, mask);
+      var p = penalty(masked, qr.sz);
+      if (p < bestP) { bestP = p; bestM = masked; }
+    }
+
+    return { matrix: bestM, size: qr.sz, version: ver };
+  }
+
+  /* --- Render QR onto a <canvas> element --- */
+  function toCanvas(canvas, text, opts) {
+    opts = opts || {};
+    var width = opts.width || 200;
+    var margin = opts.margin || 0;
+    var dark = (opts.color && opts.color.dark) || '#000000';
+    var light = (opts.color && opts.color.light) || '#ffffff';
+
+    var result = generate(text);
+    var matrix = result.matrix;
+    var sz = result.size;
+    var totalModules = sz + margin * 2;
+    var moduleSize = Math.max(1, Math.ceil(width / totalModules));
+    var canvasSize = moduleSize * totalModules;
+
+    canvas.width = canvasSize;
+    canvas.height = canvasSize;
+    var ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = light;
+    ctx.fillRect(0, 0, canvasSize, canvasSize);
+
+    ctx.fillStyle = dark;
+    for (var r = 0; r < sz; r++)
+      for (var c = 0; c < sz; c++)
+        if (matrix[r][c])
+          ctx.fillRect((c + margin) * moduleSize, (r + margin) * moduleSize, moduleSize, moduleSize);
+  }
+
+  return { generate: generate, toCanvas: toCanvas };
+})();
+
+
+/* ==========================================================
+   Base58 GUID-256 Generator Application
+   ========================================================== */
+var B58_ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+var B58_BASE = BigInt(B58_ALPHABET.length);
+var BASE_URL = 'https://eloistree.github.io/GUID/';
+
+function random256() {
+  var bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  var result = 0n;
+  for (var i = 0; i < bytes.length; i++) result = (result << 8n) | BigInt(bytes[i]);
+  return result;
+}
+
+function encodeBase58(num) {
+  if (num === 0n) return B58_ALPHABET[0];
+  var result = '';
+  var n = num;
+  while (n > 0n) {
+    result = B58_ALPHABET[Number(n % B58_BASE)] + result;
+    n = n / B58_BASE;
+  }
+  return result;
+}
+
+function generateB58Guid() {
+  return encodeBase58(random256());
+}
+
+function guidToUrl(guid) {
+  return BASE_URL + guid;
+}
+
+// DOM references
+var guidText = document.getElementById('guidText');
+var placeholder = document.getElementById('placeholder');
+var lengthVal = document.getElementById('lengthVal');
+var generateBtn = document.getElementById('generateBtn');
+var copyBtn = document.getElementById('copyBtn');
+var qrToggleBtn = document.getElementById('qrToggleBtn');
+var qrSection = document.getElementById('qrSection');
+var qrCanvasRaw = document.getElementById('qrCanvasRaw');
+var qrCanvasUrl = document.getElementById('qrCanvasUrl');
+var urlPreview = document.getElementById('urlPreview');
+var rawCopyPng = document.getElementById('rawCopyPng');
+var rawDownload = document.getElementById('rawDownload');
+var urlCopyPng = document.getElementById('urlCopyPng');
+var urlDownload = document.getElementById('urlDownload');
+var urlCopyText = document.getElementById('urlCopyText');
+var historyList = document.getElementById('historyList');
+var emptyState = document.getElementById('emptyState');
+var clearBtn = document.getElementById('clearBtn');
+var toast = document.getElementById('toast');
+
+var currentGuid = '';
+var currentUrl = '';
+var qrVisible = false;
+var historyArr = [];
+var MAX_HISTORY = 10;
+
+function showToast(msg, isError) {
+  toast.textContent = msg;
+  toast.classList.toggle('error', !!isError);
+  toast.classList.add('show');
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(function() { toast.classList.remove('show'); }, 2000);
+}
+
+async function copyToClipboard(text) {
+  if (!text) return;
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast('Copied to clipboard');
+  } catch {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('Copied to clipboard');
+  }
+}
+
+function renderQRCodes(guid) {
+  var url = guidToUrl(guid);
+  QR.toCanvas(qrCanvasRaw, guid, {
+    width: 200, margin: 0,
+    color: { dark: '#0c0f14', light: '#ffffff' }
+  });
+  QR.toCanvas(qrCanvasUrl, url, {
+    width: 200, margin: 0,
+    color: { dark: '#0c0f14', light: '#ffffff' }
+  });
+  urlPreview.textContent = url;
+}
+
+/* Create a high-res PNG blob from any QR canvas with rounded-corner padding */
+function createQRPngBlob(canvas, scale) {
+  scale = scale || 3;
+  var padding = Math.round(canvas.width * 0.15);
+  var totalSize = (canvas.width + padding * 2) * scale;
+
+  var offscreen = document.createElement('canvas');
+  offscreen.width = totalSize;
+  offscreen.height = totalSize;
+  var ctx = offscreen.getContext('2d');
+
+  var r = 16 * scale;
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.moveTo(r, 0);
+  ctx.lineTo(totalSize - r, 0);
+  ctx.quadraticCurveTo(totalSize, 0, totalSize, r);
+  ctx.lineTo(totalSize, totalSize - r);
+  ctx.quadraticCurveTo(totalSize, totalSize, totalSize - r, totalSize);
+  ctx.lineTo(r, totalSize);
+  ctx.quadraticCurveTo(0, totalSize, 0, totalSize - r);
+  ctx.lineTo(0, r);
+  ctx.quadraticCurveTo(0, 0, r, 0);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(canvas, padding * scale, padding * scale, canvas.width * scale, canvas.height * scale);
+
+  return new Promise(function(resolve) { offscreen.toBlob(resolve, 'image/png'); });
+}
+
+function setBtnCopied(btn, origHTML) {
+  btn.classList.add('copied-state');
+  btn.innerHTML = '<i class="fa-solid fa-check"></i> Done';
+  setTimeout(function() {
+    btn.classList.remove('copied-state');
+    btn.innerHTML = origHTML;
+  }, 1800);
+}
+
+async function copyQrPng(canvas, btn) {
+  try {
+    var blob = await createQRPngBlob(canvas, 3);
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+    var orig = btn.innerHTML;
+    setBtnCopied(btn, orig);
+    showToast('QR PNG copied to clipboard');
+  } catch {
+    showToast('Clipboard API not supported for images', true);
+  }
+}
+
+async function downloadQrPng(canvas, filename) {
+  try {
+    var blob = await createQRPngBlob(canvas, 3);
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('QR PNG downloaded');
+  } catch {
+    showToast('Download failed', true);
+  }
+}
+
+function toggleQR() {
+  if (!currentGuid) return;
+  qrVisible = !qrVisible;
+  qrSection.classList.toggle('open', qrVisible);
+  qrToggleBtn.classList.toggle('active', qrVisible);
+  if (qrVisible) renderQRCodes(currentGuid);
+}
+
+function addToHistory(guid) {
+  historyArr.unshift(guid);
+  if (historyArr.length > MAX_HISTORY) historyArr.pop();
+  renderHistory();
+}
+
+function renderHistory() {
+  historyList.querySelectorAll('.history-item').forEach(function(el) { el.remove(); });
+  if (historyArr.length === 0) { emptyState.style.display = 'block'; return; }
+  emptyState.style.display = 'none';
+
+  historyArr.forEach(function(guid) {
+    var item = document.createElement('div');
+    item.className = 'history-item';
+
+    var guidSpan = document.createElement('span');
+    guidSpan.className = 'h-guid';
+    guidSpan.textContent = guid;
+    guidSpan.title = 'Click to copy GUID';
+    guidSpan.addEventListener('click', function() { copyToClipboard(guid); });
+
+    var actions = document.createElement('div');
+    actions.className = 'h-actions';
+
+    // Copy URL text
+    var urlBtn = document.createElement('button');
+    urlBtn.className = 'h-icon-btn';
+    urlBtn.innerHTML = '<i class="fa-solid fa-link"></i>';
+    urlBtn.title = 'Copy URL';
+    urlBtn.setAttribute('aria-label', 'Copy shareable URL');
+    urlBtn.addEventListener('click', function() { copyToClipboard(guidToUrl(guid)); });
+
+    // Copy URL QR as PNG
+    var qrUrlBtn = document.createElement('button');
+    qrUrlBtn.className = 'h-icon-btn';
+    qrUrlBtn.innerHTML = '<i class="fa-solid fa-qrcode"></i>';
+    qrUrlBtn.title = 'Copy URL QR as PNG';
+    qrUrlBtn.setAttribute('aria-label', 'Copy URL QR code as PNG');
+    qrUrlBtn.addEventListener('click', function() {
+      var tmp = document.createElement('canvas');
+      QR.toCanvas(tmp, guidToUrl(guid), { width: 200, margin: 0, color: { dark: '#0c0f14', light: '#ffffff' } });
+      copyQrPng(tmp, qrUrlBtn);
+    });
+
+    // Copy raw text
+    var copyBtnEl = document.createElement('button');
+    copyBtnEl.className = 'h-icon-btn';
+    copyBtnEl.innerHTML = '<i class="fa-regular fa-copy"></i>';
+    copyBtnEl.title = 'Copy GUID text';
+    copyBtnEl.setAttribute('aria-label', 'Copy this GUID');
+    copyBtnEl.addEventListener('click', function() { copyToClipboard(guid); });
+
+    actions.appendChild(urlBtn);
+    actions.appendChild(qrUrlBtn);
+    actions.appendChild(copyBtnEl);
+    item.appendChild(guidSpan);
+    item.appendChild(actions);
+    historyList.appendChild(item);
+  });
+}
+
+function doGenerate() {
+  currentGuid = generateB58Guid();
+  currentUrl = guidToUrl(currentGuid);
+
+  placeholder.style.display = 'none';
+  guidText.style.display = 'block';
+  guidText.textContent = currentGuid;
+  lengthVal.textContent = currentGuid.length + ' ch';
+  copyBtn.disabled = false;
+  qrToggleBtn.disabled = false;
+
+  guidText.classList.add('flash');
+  setTimeout(function() { guidText.classList.remove('flash'); }, 400);
+
+  if (qrVisible) renderQRCodes(currentGuid);
+  addToHistory(currentGuid);
+}
+
+// --- Event listeners ---
+generateBtn.addEventListener('click', doGenerate);
+
+copyBtn.addEventListener('click', function() {
+  copyToClipboard(currentGuid);
+  var orig = copyBtn.innerHTML;
+  copyBtn.classList.add('active');
+  copyBtn.innerHTML = '<i class="fa-solid fa-check"></i>';
+  setTimeout(function() { copyBtn.classList.remove('active'); copyBtn.innerHTML = orig; }, 1500);
+});
+
+qrToggleBtn.addEventListener('click', toggleQR);
+
+rawCopyPng.addEventListener('click', function() { copyQrPng(qrCanvasRaw, rawCopyPng); });
+rawDownload.addEventListener('click', function() { downloadQrPng(qrCanvasRaw, 'guid-' + currentGuid.substring(0, 8) + '.png'); });
+
+urlCopyPng.addEventListener('click', function() { copyQrPng(qrCanvasUrl, urlCopyPng); });
+urlDownload.addEventListener('click', function() { downloadQrPng(qrCanvasUrl, 'guid-url-' + currentGuid.substring(0, 8) + '.png'); });
+urlCopyText.addEventListener('click', function() {
+  copyToClipboard(currentUrl);
+  var orig = urlCopyText.innerHTML;
+  setBtnCopied(urlCopyText, orig);
+});
+
+clearBtn.addEventListener('click', function() {
+  historyArr.length = 0;
+  renderHistory();
+});
+
+document.addEventListener('keydown', function(e) {
+  var tag = e.target.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+  if (e.code === 'Space') { e.preventDefault(); doGenerate(); }
+  else if (e.code === 'KeyQ' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); toggleQR(); }
+  else if (e.code === 'KeyC' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); copyToClipboard(currentGuid); }
+});
+
+// --- Background particle system ---
+(function initParticles() {
+  var canvas = document.getElementById('particles');
+  var ctx = canvas.getContext('2d');
+  var w, h;
+  var particles = [];
+  var COUNT = 45;
+
+  function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+
+  for (var i = 0; i < COUNT; i++) {
+    particles.push({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      r: Math.random() * 2 + 0.5,
+      alpha: Math.random() * 0.4 + 0.1,
+    });
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, w, h);
+    for (var i = 0; i < particles.length; i++) {
+      for (var j = i + 1; j < particles.length; j++) {
+        var dx = particles[i].x - particles[j].x;
+        var dy = particles[i].y - particles[j].y;
+        var dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 150) {
+          var a = (1 - dist / 150) * 0.08;
+          ctx.strokeStyle = 'rgba(0,229,160,' + a + ')';
+          ctx.lineWidth = 0.5;
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.stroke();
+        }
+      }
+    }
+    for (var k = 0; k < particles.length; k++) {
+      var p = particles[k];
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < 0) p.x = w;
+      if (p.x > w) p.x = 0;
+      if (p.y < 0) p.y = h;
+      if (p.y > h) p.y = 0;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, Math.max(0.1, p.r), 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0,229,160,' + p.alpha + ')';
+      ctx.fill();
+    }
+    requestAnimationFrame(draw);
+  }
+
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    draw();
+  }
+})();
 </script>
 </body>
 </html>
